@@ -421,25 +421,31 @@ module FloatIntervalImpl(Float_t : CFloatType) = struct
 
   let eval_acos = function
     | (l, h) when l = h && l = Float_t.of_float Nearest 1. -> of_const 0. (*acos(1) = 0*)
-    | (l, h) ->
-      if l < (Float_t.of_float Down (-.1.)) || h > (Float_t.of_float Up 1.) then
-        Messages.warn ~category:Messages.Category.Float "Domain error might occur: acos argument might be outside of [-1., 1.]";
-      of_interval (0., (overapprox_pi)) (**could be more exact *)
+    | (l, h) when l < (Float_t.of_float Down (-.1.)) || h > (Float_t.of_float Up 1.) ->
+      Messages.warn ~category:Messages.Category.Float "Domain error might occur: acos argument might be outside of [-1., 1.]";
+      of_interval (0., (overapprox_pi))
+    | (l, h) when GobConfig.get_bool "ana.float.math_funeval" ->
+      Interval (Float_t.acos Down h, Float_t.acos Up l) (** acos is monotonic decreasing in [-1, 1]*)
+    | _ -> of_interval (0., (overapprox_pi))
 
   let eval_asin = function
     | (l, h) when l = h && l = Float_t.zero -> of_const 0. (*asin(0) = 0*)
-    | (l, h) ->
-      if l < (Float_t.of_float Down (-.1.)) || h > (Float_t.of_float Up 1.) then
-        Messages.warn ~category:Messages.Category.Float "Domain error might occur: asin argument might be outside of [-1., 1.]";
-      div (of_interval ((-. overapprox_pi), overapprox_pi)) (of_const 2.) (**could be more exact *)
+    | (l, h) when l < (Float_t.of_float Down (-.1.)) || h > (Float_t.of_float Up 1.) ->
+      Messages.warn ~category:Messages.Category.Float "Domain error might occur: asin argument might be outside of [-1., 1.]";
+      div (of_interval ((-. overapprox_pi), overapprox_pi)) (of_const 2.)
+    | (l, h) when GobConfig.get_bool "ana.float.math_funeval" ->
+      Interval (Float_t.asin Down l, Float_t.asin Up h) (** asin is monotonic increasing in [-1, 1]*)
+    | _ -> div (of_interval ((-. overapprox_pi), overapprox_pi)) (of_const 2.)
 
   let eval_atan = function
     | (l, h) when l = h && l = Float_t.zero -> of_const 0. (*atan(0) = 0*)
-    | _ -> div (of_interval ((-. overapprox_pi), overapprox_pi)) (of_const 2.) (**could be more exact *)
+    | (l, h) when GobConfig.get_bool "ana.float.math_funeval" ->
+      Interval (Float_t.atan Down l, Float_t.atan Up h) (** atan is monotonic increasing*)
+    | _ -> div (of_interval ((-. overapprox_pi), overapprox_pi)) (of_const 2.)
 
   let eval_cos = function
     | (l, h) when l = h && l = Float_t.zero -> of_const 1. (*cos(0) = 1*)
-    | _ -> of_interval (-. 1., 1.) (**could be exact for intervals where l=h, or even for Interval intervals *)
+    | _ -> of_interval (-. 1., 1.) (**could be exact for intervals where l=h, or even for some intervals *)
 
   let eval_sin = function
     | (l, h) when l = h && l = Float_t.zero -> of_const 0. (*sin(0) = 0*)

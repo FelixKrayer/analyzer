@@ -37,6 +37,9 @@ module type CFloatType = sig
   val acos: round_mode -> t -> t
   val asin: round_mode -> t -> t
   val atan: round_mode -> t -> t
+  val cos: round_mode -> t -> t
+  val sin: round_mode -> t -> t
+  val tan: round_mode -> t -> t
 
   val atof: round_mode -> string -> t
 end
@@ -79,6 +82,9 @@ module CDouble = struct
   external acos: round_mode -> t -> t = "acos_double"
   external asin: round_mode -> t -> t = "asin_double"
   external atan: round_mode -> t -> t = "atan_double"
+  external cos: round_mode -> t -> t = "cos_double"
+  external sin: round_mode -> t -> t = "sin_double"
+  external tan: round_mode -> t -> t = "tan_double"
 
   external atof: round_mode -> string -> t = "atof_double"
 end
@@ -114,6 +120,9 @@ module CFloat = struct
   external acos: round_mode -> t -> t = "acos_float"
   external asin: round_mode -> t -> t = "asin_float"
   external atan: round_mode -> t -> t = "atan_float"
+  external cos: round_mode -> t -> t = "cos_float"
+  external sin: round_mode -> t -> t = "sin_float"
+  external tan: round_mode -> t -> t = "tan_float"
 
   external atof: round_mode -> string -> t = "atof_float"
 

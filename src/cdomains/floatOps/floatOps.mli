@@ -37,6 +37,9 @@ module type CFloatType = sig
   val acos: round_mode -> t -> t
   val asin: round_mode -> t -> t
   val atan: round_mode -> t -> t
+  val cos: round_mode -> t -> t
+  val sin: round_mode -> t -> t
+  val tan: round_mode -> t -> t
   val atof: round_mode -> string -> t
 end
 

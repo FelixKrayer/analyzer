@@ -73,6 +73,12 @@ UNARY_FUN(asin, float);
 UNARY_FUN(asin, double);
 UNARY_FUN(atan, float);
 UNARY_FUN(atan, double);
+UNARY_FUN(cos, double);
+UNARY_FUN(cos, float);
+UNARY_FUN(sin, float);
+UNARY_FUN(sin, double);
+UNARY_FUN(tan, float);
+UNARY_FUN(tan, double);
 
 CAMLprim value atof_double(value mode, value str)
 {

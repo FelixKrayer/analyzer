@@ -443,13 +443,13 @@ module FloatIntervalImpl(Float_t : CFloatType) = struct
   let eval_cos_cfun l h =
     let (l', l'', h', h'') = trig_helper l h in
     if (Float_t.sub Up h' l') <= (Float_t.of_float Down 0.5) && (h'' <= Float_t.of_float Up 0.5) && (h'' >= l'') then
-      Interval (Float_t.sin Down h, Float_t.sin Up l)
+      Interval (Float_t.cos Down h, Float_t.cos Up l)
     else if (Float_t.sub Up h' l') <= (Float_t.of_float Down 0.5) && (l'' >= Float_t.of_float Down 0.5) && (h'' >= l'') then
-      Interval (Float_t.sin Down l, Float_t.sin Up h)
-    else if (Float_t.sub Up h' l') <= (Float_t.of_float Down 1.) && (l'' >= h'') then
-      Interval (Float_t.of_float Down (-.1.), max (Float_t.sin Up l) (Float_t.sin Up h))
+      Interval (Float_t.cos Down l, Float_t.cos Up h)
+    else if (Float_t.sub Up h' l') <= (Float_t.of_float Down 1.) && (l'' <= h'') then
+      Interval (Float_t.of_float Down (-.1.), max (Float_t.cos Up l) (Float_t.cos Up h))
     else if (Float_t.sub Up h' l') <= (Float_t.of_float Down 1.) && (l'' >= Float_t.of_float Down 0.5) && (h'' >= l'' || h'' <= Float_t.of_float Down 0.5) then
-      Interval (min (Float_t.sin Down l) (Float_t.sin Down h), Float_t.of_float Up 1.)
+      Interval (min (Float_t.cos Down l) (Float_t.cos Down h), Float_t.of_float Up 1.)
     else
     of_interval (-. 1., 1.)
 
@@ -471,7 +471,7 @@ module FloatIntervalImpl(Float_t : CFloatType) = struct
     if (Float_t.sub Up h' l') <= (Float_t.of_float Down 0.5) 
       && Bool.not ((l'' <= Float_t.of_float Up 0.25) && (h'' >= Float_t.of_float Down 0.25)) 
       && Bool.not ((l'' <= Float_t.of_float Up 0.75) && (h'' >= Float_t.of_float Down 0.75)) then
-        norm @@ Interval (Float_t.tan Down l, Float_t.tan Up h)
+        Interval (Float_t.tan Down l, Float_t.tan Up h)
     else
       top ()
 

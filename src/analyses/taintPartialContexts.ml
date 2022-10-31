@@ -45,7 +45,7 @@ struct
   let enter ctx (lval: lval option) (f:fundec) (args:exp list) : (D.t * D.t) list =
     [ctx.local, (D.bot ())] (** Entering a function, all globals count as untouched *)
 
-  let combine ctx (lvalOpt:lval option) fexp (f:fundec) (args:exp list) fc (au:D.t) : D.t =
+  let combine ctx (lvalOpt:lval option) fexp (f:fundec) (args:exp list) fc (au:D.t) (f_ask: Queries.ask) : D.t =
     Messages.debug ~category:Analyzer "combine for %s in TaintPC: tainted: in function: %a along main: %a" f.svar.vname D.pretty au D.pretty ctx.local;
     let d =
       match lvalOpt with

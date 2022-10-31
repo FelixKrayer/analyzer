@@ -2775,8 +2775,8 @@ struct
         (* List.map (fun f -> f (fun lv -> (fun x -> set ~ctx:(Some ctx) ctx.ask ctx.global st (eval_lv ctx.ask ctx.global st lv) (Cilfacade.typeOfLval lv) x))) (LF.effects_for f.vname args) |> BatList.fold_left D.meet st *)
       end
 
-  let combine ctx (lval: lval option) fexp (f: fundec) (args: exp list) fc (after: D.t) : D.t =
-    let tainted = ctx.ask (Q.Tainted) in
+  let combine ctx (lval: lval option) fexp (f: fundec) (args: exp list) fc (after: D.t) (f_ask: Q.ask) : D.t =
+    let tainted = f_ask.f Q.Tainted in
     Messages.debug ~category:Analyzer "combine for %s in base: tainted: %a" f.svar.vname Q.TaintS.pretty tainted;
     let combine_one (st: D.t) (fun_st: D.t) =
       if M.tracing then M.tracel "combine" "%a\n%a\n" CPA.pretty st.cpa CPA.pretty fun_st.cpa;

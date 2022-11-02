@@ -2776,6 +2776,8 @@ struct
       end
 
   let combine ctx (lval: lval option) fexp (f: fundec) (args: exp list) fc (after: D.t) : D.t =
+    let tainted = ctx.ask (Q.Tainted) in
+    Messages.debug ~category:Analyzer "combine for %s in base: tainted: %a" f.svar.vname Q.TaintS.pretty tainted;
     let combine_one (st: D.t) (fun_st: D.t) =
       if M.tracing then M.tracel "combine" "%a\n%a\n" CPA.pretty st.cpa CPA.pretty fun_st.cpa;
       (* This function does miscellaneous things, but the main task was to give the

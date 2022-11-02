@@ -38,7 +38,7 @@ struct
     ctx.local
 
   let return ctx (exp:exp option) (f:fundec) : D.t =
-    let locals = D.of_list (f.sformals @ f.slocals) in
+    let locals = D.of_list (f.sformals @ f.slocals) in (** TODO: Weak updates?*)
     Messages.debug ~category:Analyzer "returning from %s: Tainted Vars: %a; minus Locals: %a" f.svar.vname D.pretty ctx.local D.pretty locals;
     D.diff ctx.local locals
 
@@ -46,12 +46,12 @@ struct
     [ctx.local, (D.bot ())] (** Entering a function, all globals count as untouched *)
 
   let combine ctx (lvalOpt:lval option) fexp (f:fundec) (args:exp list) fc (au:D.t) : D.t =
-    Messages.debug ~category:Analyzer "Function call to %s: Tainted Vars: %a" f.svar.vname D.pretty au;
+    Messages.debug ~category:Analyzer "combine for %s in TaintPC: tainted: in function: %a along main: %a" f.svar.vname D.pretty au D.pretty ctx.local;
     let d =
       match lvalOpt with
       | Some lv -> taint_lval ctx lv
       | None -> ctx.local 
-      in
+    in
     D.union d au
 
   let special ctx (lvalOpt: lval option) (f:varinfo) (arglist:exp list) : D.t =
@@ -59,7 +59,7 @@ struct
       match lvalOpt with
       | Some lv -> taint_lval ctx lv
       | None -> ctx.local 
-      in
+    in
     let desc = LibraryFunctions.find f in
     let shallow_addrs = LibraryDesc.Accesses.find desc.accs { kind = Write; deep = false } arglist in
     let deep_addrs = LibraryDesc.Accesses.find desc.accs { kind = Write; deep = true } arglist in
@@ -106,8 +106,11 @@ struct
   let threadspawn ctx lval f args fctx = ctx.local
   let exitstate  v = D.top ()
 
-  let query ctx (type a) (q: a Queries.t) : a Queries.result = Queries.Result.top q
-    
+  let query ctx (type a) (q: a Queries.t) : a Queries.result =
+    match q with
+    | Tainted -> (ctx.local : Queries.TaintS.t)
+    | _ -> Queries.Result.top q
+
 end
 
 let _ =

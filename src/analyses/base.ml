@@ -2780,6 +2780,7 @@ struct
     Messages.debug ~category:Analyzer "combine for %s in base: tainted: %a" f.svar.vname Q.TaintS.pretty tainted;
     let combine_one (st: D.t) (fun_st: D.t) =
       if M.tracing then M.tracel "combine" "%a\n%a\n" CPA.pretty st.cpa CPA.pretty fun_st.cpa;
+      Messages.debug ~category:Analyzer "combine base:\ncaller: %a\ncallee: %a\n" CPA.pretty st.cpa CPA.pretty fun_st.cpa;
       (* This function does miscellaneous things, but the main task was to give the
        * handle to the global state to the state return from the function, but now
        * the function tries to add all the context variables back to the callee.
@@ -2788,8 +2789,12 @@ struct
       let add_globals (st: store) (fun_st: store) =
         (* Remove the return value as this is dealt with separately. *)
         let cpa_noreturn = CPA.remove (return_varinfo ()) fun_st.cpa in
-        let cpa_local = CPA.filter (fun x _ -> not (is_global (Analyses.ask_of_ctx ctx) x)) st.cpa in
-        let cpa' = CPA.fold CPA.add cpa_noreturn cpa_local in (* add cpa_noreturn to cpa_local *)
+        let cpa_tainted = CPA.filter (fun x _ -> Q.TaintS.mem x tainted) cpa_noreturn in
+        (*let cpa_local = CPA.filter (fun x _ -> not (is_global (Analyses.ask_of_ctx ctx) x)) st.cpa in*)
+        Messages.debug ~category:Analyzer "callee tainted: %a\n" CPA.pretty cpa_tainted;
+        let cpa_local = st.cpa in
+        let cpa' = CPA.fold CPA.add cpa_tainted cpa_local in (* add cpa_noreturn to cpa_local *)
+        Messages.debug ~category:Analyzer "both combined:\n%a\n" CPA.pretty cpa';
         { fun_st with cpa = cpa' }
       in
       let return_var = return_var () in
@@ -2801,7 +2806,7 @@ struct
       let nst = add_globals st fun_st in
 
       (* Projection to Precision of the Caller *)
-      let p = PrecisionUtil.int_precision_from_node ()in (* Since f is the fundec of the Callee we have to get the fundec of the current Node instead *)
+      let p = PrecisionUtil.int_precision_from_node () in (* Since f is the fundec of the Callee we have to get the fundec of the current Node instead *)
       let callerFundec = match !MyCFG.current_node with
         | Some n -> Node.find_fundec n
         | None -> failwith "callerfundec not found"

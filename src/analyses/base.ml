@@ -2777,10 +2777,10 @@ struct
 
   let combine ctx (lval: lval option) fexp (f: fundec) (args: exp list) fc (after: D.t) (f_ask: Q.ask) : D.t =
     let tainted = f_ask.f Q.Tainted in
-    Messages.debug ~category:Analyzer "combine for %s in base: tainted: %a" f.svar.vname Q.TaintS.pretty tainted;
+    if M.tracing then M.trace "taintPC" "combine for %s in base: tainted: %a\n" f.svar.vname Q.TaintS.pretty tainted;
     let combine_one (st: D.t) (fun_st: D.t) =
       if M.tracing then M.tracel "combine" "%a\n%a\n" CPA.pretty st.cpa CPA.pretty fun_st.cpa;
-      Messages.debug ~category:Analyzer "combine base:\ncaller: %a\ncallee: %a\n" CPA.pretty st.cpa CPA.pretty fun_st.cpa;
+      if M.tracing then M.trace "taintPC" "combine base:\ncaller: %a\ncallee: %a\n" CPA.pretty st.cpa CPA.pretty fun_st.cpa;
       (* This function does miscellaneous things, but the main task was to give the
        * handle to the global state to the state return from the function, but now
        * the function tries to add all the context variables back to the callee.
@@ -2791,10 +2791,10 @@ struct
         let cpa_noreturn = CPA.remove (return_varinfo ()) fun_st.cpa in
         let cpa_tainted = CPA.filter (fun x _ -> Q.TaintS.mem x tainted) cpa_noreturn in
         (*let cpa_local = CPA.filter (fun x _ -> not (is_global (Analyses.ask_of_ctx ctx) x)) st.cpa in*)
-        Messages.debug ~category:Analyzer "callee tainted: %a\n" CPA.pretty cpa_tainted;
+        if M.tracing then M.trace "taintPC" "callee tainted: %a\n" CPA.pretty cpa_tainted;
         let cpa_local = st.cpa in
         let cpa' = CPA.fold CPA.add cpa_tainted cpa_local in (* add cpa_noreturn to cpa_local *)
-        Messages.debug ~category:Analyzer "both combined:\n%a\n" CPA.pretty cpa';
+        if M.tracing then M.trace "taintPC" "both combined: %a\n" CPA.pretty cpa';
         { fun_st with cpa = cpa' }
       in
       let return_var = return_var () in

@@ -38,9 +38,10 @@ struct
     ctx.local
 
   let return ctx (exp:exp option) (f:fundec) : D.t =
-    let locals = D.of_list (f.sformals @ f.slocals) in (** TODO: Weak updates?*)
-    if M.tracing then M.trace "taintPC" "returning from %s: Tainted Vars: %a; minus Locals: %a\n" f.svar.vname D.pretty ctx.local D.pretty locals;
-    D.diff ctx.local locals
+    let locals = D.of_list (f.sformals @ f.slocals) in
+    let locals_noweak = D.filter (fun v -> not (ctx.ask (Queries.IsMultiple v))) locals in
+    if M.tracing then M.trace "taintPC" "returning from %s: tainted vars: %a\n - locals: %a\n - locals_noweak: %a\n" f.svar.vname D.pretty ctx.local D.pretty locals D.pretty locals_noweak;
+    D.diff ctx.local locals_noweak
 
   let enter ctx (lval: lval option) (f:fundec) (args:exp list) : (D.t * D.t) list =
     [ctx.local, (D.bot ())] (** Entering a function, all globals count as untouched *)

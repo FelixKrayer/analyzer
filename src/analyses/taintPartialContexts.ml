@@ -93,10 +93,10 @@ struct
         | (Var v, _) -> D.add v accD
         | (Mem e, _) ->
           let reachables = Queries.LS.elements (ctx.ask (Queries.ReachableFrom e)) in
-          List.fold_left (fun accD targ -> 
+          List.fold_left (fun accD' targ -> 
             match (Lval.CilLval.to_lval targ) with
-            | (Var v, _) -> D.add v accD
-            | _ -> accD) d reachables)
+            | (Var v, _) -> D.add v accD'
+            | _ -> accD') accD reachables)
       | _ -> accD
     ) d deep_addrs
     in

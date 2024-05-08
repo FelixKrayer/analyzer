@@ -44,7 +44,7 @@ sig
   module Dom : Lattice.S with type t = d
 
   (** The system in functional form. *)
-  val system : v -> ((v -> d) -> (v -> d -> unit) -> d) m
+  val system : v -> (?createl:(unit -> unit) -> (v -> d) -> (v -> d -> unit) -> d) m
 
   val sys_change: (v -> d) -> v sys_change_info
   (** Compute incremental constraint system change from old solution. *)
@@ -61,7 +61,7 @@ sig
 
   module D : Lattice.S
   module G : Lattice.S
-  val system : LVar.t -> ((LVar.t -> D.t) -> (LVar.t -> D.t -> unit) -> (GVar.t -> G.t) -> (GVar.t -> G.t -> unit) -> D.t) option
+  val system : LVar.t -> ((LVar.t -> D.t) -> (LVar.t -> D.t -> unit) -> (unit -> unit) -> (GVar.t -> G.t) -> (GVar.t -> G.t -> unit) -> D.t) option
   val iter_vars: (LVar.t -> D.t) -> (GVar.t -> G.t) -> VarQuery.t -> LVar.t VarQuery.f -> GVar.t VarQuery.f -> unit
   val sys_change: (LVar.t -> D.t) -> (GVar.t -> G.t) -> [`L of LVar.t | `G of GVar.t] sys_change_info
 end
@@ -193,9 +193,9 @@ struct
 
   let l, g = (fun x -> `L x), (fun x -> `G x)
   let lD, gD = (fun x -> `Lifted2 x), (fun x -> `Lifted1 x)
-
-  let conv f get set =
-    f (getL % get % l) (fun x v -> set (l x) (lD v))
+  let conv f ?(createl=(fun () -> ())) get set =
+      f (getL % get % l) (fun x v -> set (l x) (lD v)) 
+      createl 
       (getG % get % g) (fun x v -> set (g x) (gD v))
     |> lD
 
@@ -285,13 +285,13 @@ struct
       match S.system x with
       | None -> None
       | Some f ->
-        let f' get set =
+        let f' ?(createl=(fun () -> ())) get set =
           let old_current_var = !current_var in
           current_var := Some x;
           Fun.protect ~finally:(fun () ->
               current_var := old_current_var
             ) (fun () ->
-              f get set
+              f ~createl:createl get set
             )
         in
         Some f'

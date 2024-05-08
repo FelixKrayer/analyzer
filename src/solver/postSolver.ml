@@ -157,8 +157,8 @@ struct
   let system x =
     match S.system x, VH.find_option starth x with
     | f_opt, None -> f_opt
-    | None, Some d -> Some (fun _ _ -> d)
-    | Some f, Some d -> Some (fun get set -> S.Dom.join (f get set) d)
+    | None, Some d -> Some (fun ?(createl=(fun () -> ())) _ _ -> createl (); d)
+    | Some f, Some d -> Some (fun ?(createl=(fun () -> ())) get set -> S.Dom.join (f get set) d)
 end
 
 (** Postsolver for incremental. *)

@@ -173,7 +173,12 @@ module DirtyBoxSolver : GenericEqSolver =
           H.replace stbl x ();
           (* set the new value for [x] *)
           eval_rhs_event x;
-          Option.may (fun f -> set x (f (eval x) set)) (S.system x)
+          Option.may (fun (f:(?createl:(unit -> unit) -> (S.v -> S.d) -> (S.v -> S.d -> unit) -> S.d)) -> set x (f (eval x) set)) (S.system x)
+          (*let sys_opt = (S.system x) in
+          begin match sys_opt with
+          | None -> ()
+          | Some sys -> set x (sys (eval x) set) 
+          end;*)
         end
 
       (* return the value for [y] and mark its influence on [x] *)
@@ -255,7 +260,7 @@ module SoundBoxSolverImpl =
           (* set the new value for [x] *)
           eval_rhs_event x;
           let set_x d = if H.mem called x then set x d in
-          Option.may (fun f -> set_x (f (eval x) side)) (S.system x);
+          Option.may (fun (f:(?createl:(unit -> unit) -> (S.v -> S.d) -> (S.v -> S.d -> unit) -> S.d)) -> set_x (f (eval x) side)) (S.system x);
           (* remove [x] from called *)
           H.remove called x
         end
@@ -363,7 +368,7 @@ module PreciseSideEffectBoxSolver : GenericEqSolver =
           H.remove sols x;
           (* set the new value for [x] *)
           eval_rhs_event x;
-          Option.may (fun f -> set x (f (eval x) (side x))) (S.system x);
+          Option.may (fun (f:(?createl:(unit -> unit) -> (S.v -> S.d) -> (S.v -> S.d -> unit) -> S.d)) -> set x (f (eval x) (side x))) (S.system x);
           (* remove [x] from called *)
           H.remove called x
         end

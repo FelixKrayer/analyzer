@@ -876,7 +876,8 @@ struct
     let ctx, r, spawns = common_ctx var edge prev_node d getl sidel getg sideg in
     common_join ctx (S.skip ctx) !r !spawns
 
-  let tf var getl sidel getg sideg prev_node edge d =
+  let tf var getl sidel createl getg sideg prev_node edge d =
+    createl;
     begin match edge with
       | Assign (lv,rv) -> tf_assign var edge prev_node lv rv
       | VDecl (v)      -> tf_vdecl var edge prev_node v
@@ -896,7 +897,7 @@ struct
       | _ -> None (* for other marks *)
     )
 
-  let tf var getl sidel getg sideg prev_node (_,edge) d (f,t) =
+  let tf var getl sidel createl getg sideg prev_node (_,edge) d (f,t) =
     let old_loc  = !Goblint_tracing.current_loc in
     let old_loc2 = !Goblint_tracing.next_loc in
     Goblint_tracing.current_loc := f;
@@ -905,16 +906,16 @@ struct
         Goblint_tracing.current_loc := old_loc;
         Goblint_tracing.next_loc := old_loc2
       ) (fun () ->
-        let d       = tf var getl sidel getg sideg prev_node edge d in
+        let d       = tf var getl sidel createl getg sideg prev_node edge d in
         d
       )
 
-  let tf (v,c) (edges, u) getl sidel getg sideg =
+  let tf (v,c) (edges, u) getl sidel createl getg sideg =
     let pval = getl (u,c) in
     let _, locs = List.fold_right (fun (f,e) (t,xs) -> f, (f,t)::xs) edges (Node.location v,[]) in
-    List.fold_left2 (|>) pval (List.map (tf (v,Obj.repr (fun () -> c)) getl sidel getg sideg u) edges) locs
+    List.fold_left2 (|>) pval (List.map (tf (v,Obj.repr (fun () -> c)) getl sidel createl getg sideg u) edges) locs
 
-  let tf (v,c) (e,u) getl sidel getg sideg =
+  let tf (v,c) (e,u) getl sidel createl getg sideg =
     let old_node = !current_node in
     let old_fd = Option.map Node.find_fundec old_node |? Cil.dummyFunDec in
     let new_fd = Node.find_fundec v in
@@ -929,7 +930,7 @@ struct
         if not (CilType.Fundec.equal old_fd new_fd) then
           Timing.Program.exit new_fd.svar.vname
       ) (fun () ->
-        let d       = tf (v,c) (e,u) getl sidel getg sideg in
+        let d       = tf (v,c) (e,u) getl sidel createl getg sideg in
         d
       )
 
@@ -938,8 +939,8 @@ struct
     | FunctionEntry _ ->
       None
     | _ ->
-      let tf getl sidel getg sideg =
-        let tf' eu = tf (v,c) eu getl sidel getg sideg in
+      let tf getl sidel createl getg sideg =
+        let tf' eu = tf (v,c) eu getl sidel createl getg sideg in
 
         match NodeH.find_option CfgTools.node_scc_global v with
         | Some scc when NodeH.mem scc.prev v && NodeH.length scc.prev = 1 ->

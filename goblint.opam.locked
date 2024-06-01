@@ -53,6 +53,7 @@ depends: [
   "cpu" {= "2.0.0"}
   "csexp" {= "1.5.1"}
   "ctypes" {= "0.20.1"}
+  "domain-local-await" {= "1.0.0"}
   "dune" {= "3.7.1"}
   "dune-build-info" {= "3.7.1"}
   "dune-configurator" {= "3.7.1"}

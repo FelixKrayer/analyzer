@@ -1,0 +1,19 @@
+l 171/172: find y rho can be pulled out of simple_solve
+
+l 181: y is always a member of rho, since before in simple solve, a find y rho was executed, that would produce an error
+
+l 180: simple_solve can be placed in "else" of "if called". Either system != none, then `iterate y Widen` is called which immediately returns if called, so this is uneccessary. 
+If system = none, then y would be inited and set stable. However, a y, for which system = none can never be called, because a variable x is only set to called in iterate after an assert system x <> none
+
+l 176 invert "if called" check to make it more similar to td_wn_side
+
+l 221 now iterate is always called on variables x, that have been checked not to be called -> check can be removed
+
+l 238: for called vars, it is mainly important, that a variable is called here
+now, the set stable can be moved out of the iterate in the front.
+the remove stable can be moved out of the iterate in the back. This has no effect, except for the destabilize x, where a deep destabilize only happens for non-called vars. calledness only differs for x, but a destabilize x is the initial call, so this is not an issue.
+this has the following effects: 
+  l 316 -> for the initial iterate call, the var to be solved for has to be set called before and removed from called afterwards (this is probably uneccessary, but i left it in for completeness)
+  l 262 267 273 -> for these tailcalls, setting and unsetting x as called canceles out and can be ignored
+  l 272 -> for the iterate call in query, that steps down into another variable, this variable has to be set called before and uncalled afterwards.
+

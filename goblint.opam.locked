@@ -36,7 +36,7 @@ depends: [
   "bigarray-compat" {= "1.1.0"}
   "bigstringaf" {= "0.9.0"}
   "bos" {= "0.2.1"}
-  "camlidl" {= "1.11"}
+  "camlidl" {= "1.12"}
   "camlp-streams" {= "5.0.1"}
   "catapult" {= "0.2"}
   "catapult-file" {= "0.2"}

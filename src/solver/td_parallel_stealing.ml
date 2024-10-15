@@ -313,19 +313,22 @@ module Base : GenericEqSolver =
 
       let start_threads x =
         (* threads are created with a distinct prio, so that for all threads it holds: lowest_prio > prio >= highest_prio. highest_prio is the main thread. *)
-        assert (nr_domains > 0);
-        let threads = Array.init nr_domains (fun j ->
-            Domain.spawn (fun () -> 
+        let threads = Array.init (nr_domains - 1) (fun j ->
+            let dom = Domain.spawn (fun () -> 
                 if Logs.Level.should_log Debug then Printexc.record_backtrace true;
-                Unix.sleepf (Float.mul (float j) 0.25);
                 let prio = (lowest_prio - j - 1) in
-                if tracing then trace "start" "thread %d with prio %d started" j prio;
+                if tracing then trace "start" "thread %d with prio %d started" (j + 1) prio;
                 try
                   solve_thread x prio
                 with 
                   e -> Printexc.print_backtrace stderr;
                   raise e
-              )) in 
+              ) in
+            Unix.sleepf 0.25;
+            dom
+          ) in 
+        if tracing then trace "start" "mainthread with prio %d started" highest_prio;
+        solve_thread x highest_prio;
         Array.iter Domain.join threads
       in
 
